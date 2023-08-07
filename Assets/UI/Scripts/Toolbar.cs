@@ -7,40 +7,66 @@ namespace CustomGUI
 {
     public class Toolbar : CustomUIComponent
     {
+        public int numberOfToolbarContainers;
         public ToolbarSO toolbarData;
         public Style style;
         public GameObject toolbarBackgroundContainer;
-        public List<GameObject> toolbarContainers;
+        public GameObject[] toolbarContainers;
         public List<Style> toolbarStyles;
 
         private Image toolbarBackgroundImage;
 #pragma warning disable CS0649
-        private List<Image> toolbarImages;
+        private Image[] toolbarImages;
+#pragma warning restore CS0649
+        private HorizontalLayoutGroup horizontalLayoutGroup;
 
         public override void Setup()
         {
-            toolbarBackgroundImage = toolbarBackgroundContainer.GetComponent<Image>();
-            toolbarImages = new List<Image>();
-            toolbarImages.Clear();
-            for (int i = 0; i < toolbarContainers.Count; i++)
+            horizontalLayoutGroup = GetComponent<HorizontalLayoutGroup>();
+
+            // Set up Arrays
+            toolbarContainers = new GameObject[numberOfToolbarContainers];
+            toolbarImages = new Image[numberOfToolbarContainers];
+            for (int i = 0; i < numberOfToolbarContainers; i++)
             {
-                Image containerImageRef = toolbarContainers[i].GetComponent<Image>();
-                toolbarImages.Add(containerImageRef);
+                GameObject container = new GameObject("Container");
+                RectTransform rect = container.AddComponent<RectTransform>();
+                rect.transform.SetParent(container.transform);
+                rect.localScale = Vector3.one;
+                rect.sizeDelta = toolbarData.preferredSlotSize;
+
+                Image img = container.AddComponent<Image>();
+                container.transform.SetParent(this.transform);
+                toolbarContainers[i] = container;
+                toolbarImages[i] = img;
             }
+
+            //toolbarData.toolbarImages = new Sprite[numberOfToolbarContainers];
+
+            toolbarBackgroundImage = toolbarBackgroundContainer.GetComponent<Image>();
+
+            //for (int i = 0; i < toolbarContainers.Length; i++)
+            //    toolbarImages[i] = toolbarContainers[i].GetComponent<Image>();
         }
 
         public override void Configure()
         {
+            horizontalLayoutGroup.padding = toolbarData.padding;
+            horizontalLayoutGroup.spacing = toolbarData.spacing;
+
+
             toolbarBackgroundImage.color = toolbarData.theme.GetBackgroundColor(style);
-            for (int i = 0; i < toolbarContainers.Count; i++)
-            {
-                toolbarImages[i].color = toolbarData.theme.GetBackgroundColor(toolbarStyles[i]);
-                if (toolbarData.toolbarImages.Count > 0)
-                {
-                    toolbarImages[i].sprite = toolbarData.toolbarImages[i];
-                }
-            }
+
+        }
+
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
+        private void OnValidate()
+#pragma warning restore CS0108 // Member hides inherited member; missing new keyword
+        {
+            while (this.transform.childCount > 1)
+                DestroyImmediate(transform.GetChild(1).gameObject);
+
+            base.OnValidate();
         }
     }
-
 }

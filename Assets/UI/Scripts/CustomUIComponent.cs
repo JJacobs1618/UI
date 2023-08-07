@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CustomGUI
 {    public abstract class CustomUIComponent : MonoBehaviour
     {
-        public float Reset;
+        public float ResetInspector;
         private void Awake()
         {
             Init();
